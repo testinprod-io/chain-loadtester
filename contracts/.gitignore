@@ -1,0 +1,12 @@
+# Compiler files
+contracts/cache/
+out/
+
+/broadcast
+/cache
+
+# Docs
+docs/
+
+# Dotenv file
+.env
