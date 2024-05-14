@@ -18,16 +18,16 @@ import {SwapRouter} from "../src/SwapRouter.sol";
 contract Setup is Script, Deployers {
     SwapRouter router;
 
-    function _deployTokens(uint8 count, uint256 totalSupply) internal returns (ERC20Mock[] memory tokens) {
+    function _deployTokens(uint8 count, uint256 amount) internal returns (ERC20Mock[] memory tokens) {
         tokens = new ERC20Mock[](count);
         for (uint8 i = 0; i < count; i++) {
             tokens[i] = new ERC20Mock();
-            tokens[i].mint(msg.sender, totalSupply);
+            tokens[i].mint(msg.sender, amount);
         }
     }
 
     function _deployMintAndApproveCurrency() internal returns (Currency currency) {
-        ERC20Mock token = _deployTokens(1, 2 ** 255)[0];
+        ERC20Mock token = _deployTokens(1, 10000 ether)[0];
 
         address[2] memory toApprove = [
             address(router),
@@ -48,21 +48,12 @@ contract Setup is Script, Deployers {
         router = new SwapRouter(manager);
         modifyLiquidityRouter = new PoolModifyLiquidityTest(manager);
 
-
         currency0 = _deployMintAndApproveCurrency();
         currency1 = _deployMintAndApproveCurrency();
         if (Currency.unwrap(currency0) > Currency.unwrap(currency1)) {
             (currency0, currency1) = (currency1, currency0);
         }
         (key,) = initPoolAndAddLiquidity(currency0, currency1, hooks, 3000, SQRT_PRICE_1_1, ZERO_BYTES);
-
-
-        console.log(CurrencyLibrary.balanceOf(currency0, msg.sender));
-        console.log(CurrencyLibrary.balanceOf(currency1, msg.sender));
-        router.swap(key, -1);
-        console.log(CurrencyLibrary.balanceOf(currency0, msg.sender));
-        console.log(CurrencyLibrary.balanceOf(currency1, msg.sender));
-
         vm.stopBroadcast();
 
         string memory json = "";
